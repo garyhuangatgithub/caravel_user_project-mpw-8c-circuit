@@ -13,13 +13,15 @@
 // limitations under the License.
 // SPDX-License-Identifier: Apache-2.0
 
+// Source http://github.com/efabless/caravel_user_project mpw-8c
+
 `default_nettype none
 
-`timescale 1 ns / 1 ps
+`timescale 1 ns / 1 ns
 
 module la_test1_tb;
 	reg clock;
-    reg RSTB;
+        reg RSTB;
 	reg CSB;
 
 	reg power1, power2;
@@ -141,7 +143,7 @@ module la_test1_tb;
 
 		// Repeat cycles of 1000 clock edges as needed to complete testbench
 		repeat (250) begin
-			repeat (1000) @(posedge clock);
+			repeat (2000) @(posedge clock);
 			// $display("+1000 cycles");
 		end
 		$display("%c[1;31m",27);
@@ -155,11 +157,20 @@ module la_test1_tb;
 	end
 
 	initial begin
-		wait(checkbits == 16'hAB40);
-		$display("LA Test 1 started");
-		wait(checkbits == 16'hAB41);
-		wait(checkbits == 16'hAB51);
-		$display("LA Test 2 passed");
+		wait(mprj_io[31:24] == 8'hA1);
+		$display("LA Test 1 ECC encoding started");
+		wait(mprj_io[31:24] == 8'hA2);
+                $display("Expected ECC encoded codeword 0x4B57");
+		$display("mprj_io[5:5] = %h", mprj_io[5:5]);
+		$display("mprj_io[21:7] = %h", mprj_io[21:7]);
+		$display("LA Test 1 passed if codeword matched");
+		wait(mprj_io[31:24] == 8'hA3);
+                $display("Given erro-injected codeword 0x4F5F");
+                $display("Expected ECC decoded message 0x4B");
+		$display("mprj_io[5:5] = %h", mprj_io[5:5]);
+		$display("mprj_io[21:7] = %h", mprj_io[21:7]);
+		$display("LA Test 2 passed if message matched");
+		wait(mprj_io[31:24] == 8'hA4);
 		#10000;
 		$finish;
 	end
